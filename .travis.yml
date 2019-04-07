@@ -1,0 +1,39 @@
+language: julia
+os:
+  - linux
+julia:
+  - 1.0
+notifications:
+  email: false
+git:
+  depth: 99999999
+cache:
+  timeout: 1000
+  directories:
+    - downloads
+env:
+  global:
+    - BINARYBUILDER_DOWNLOADS_CACHE=downloads
+    - BINARYBUILDER_AUTOMATIC_APPLE=true
+sudo: required
+
+# Before anything else, get the latest versions of things
+before_script:
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryProvider", url="https://github.com/JuliaPackaging/BinaryProvider.jl"))'
+  - julia -e 'using Pkg; Pkg.add(PackageSpec(name="BinaryBuilder", url="https://github.com/JuliaPackaging/BinaryBuilder.jl")); Pkg.build()'
+
+script:
+  - julia --color=yes build_tarballs.jl
+
+deploy:
+  provider: releases
+  api_key:
+    # Note; this api_key is only valid for JuliaMath/OpenspecfunBuilder; you need
+    # to make your own: https://docs.travis-ci.com/user/deployment/releases/
+    secure: HwXAsOPVxUR/pYnLu/g6CwDHCRb9uyzUVVT7pLUAi0Gop+eWU7i6mYIVxdrzRHo/zoVE0fCxzftifc9z1XdfXTcvSQbwob+Mdc1cA7tvo0aIJjN8zDwCS1uFe8NEUEdANuXFkRwg3lYBkpd81yf8edzNx7/1Bnyr7OjFooxcqCVpLAtdkAj4elQRvhhx50DJ5UcNOR+1ZXP2lsOgCypK8Aeh2Een7keZEFgFJzyvF4j/ovtJDUZHTvNq3BNLODnOE54Rsi4s0l8XhY0pnna6LRyW6FLbG3e61eWQwdY5+SSO55000B93PV+39JaSbmSa6OI3XsfMMjIZfKHSta+mKwAdb4STGS20fPE4bnKW4bMi6UQAg59i/iowO/CtTLWtuzLI8CWYv1Oi21aLXJVL2t1a9hIbYlvtsB4PuV7dCMvwhkwk0MawIHcknu8M1AKLgg3qcgmNu0z+QQ83B7wNgsUihc2lllofQqqNj5WO/WapSkL5jZ8F/EiNfieh87TB8Oq6uTldaFXVR5UMygYJZLm6ftc8cd9Bzs2A6/f+LVjdO0boiagywSfuT3OlQDqCBsx6l6lnJ6k4za3o5SW0FJ629FImgxhD+soxiB8Bx8ddJ1Jg1Tube+AA535zHjm8kV61cMcTY9JqXWFKG7cO+TN9ccCG2aul1G+mT/pulpw=
+  file_glob: true
+  file: products/*
+  skip_cleanup: true
+  on:
+    repo: JuliaMath/OpenspecfunBuilder
+    tags: true
